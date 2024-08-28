@@ -1,4 +1,4 @@
-module main.go
+module hub
 
 go 1.23.0
 

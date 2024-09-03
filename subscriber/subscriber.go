@@ -3,26 +3,15 @@ package subscriber
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
-func Subscribe() {
-	sk := nostr.GeneratePrivateKey()
-	pk, _ := nostr.GetPublicKey(sk)
-	nsec, _ := nip19.EncodePrivateKey(sk)
-	npub, _ := nip19.EncodePublicKey(pk)
-
-	pref, val, _ := nip19.Decode(npub)
-
-	fmt.Println(pref, val)
-
-	fmt.Println("sk:", sk)
-	fmt.Println("pk:", pk)
+func Subscribe(nsec string, npub string) {
 	fmt.Println(nsec)
 	fmt.Println(npub)
+	fmt.Println()
 
 	ctx := context.Background()
 	relay, err := nostr.RelayConnect(ctx, "wss://relay.primal.net")
@@ -30,22 +19,19 @@ func Subscribe() {
 		panic(err)
 	}
 
-	npub_Author := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // prorobot
+	fmt.Println("Listening for nostr events...")
 
 	var filters nostr.Filters
-	if _, v, err := nip19.Decode(npub_Author); err == nil {
-		pub := v.(string)
-		filters = []nostr.Filter{{
-			Kinds:   []int{nostr.KindTextNote},
-			Authors: []string{pub},
-			Limit:   1,
-		}}
-	} else {
-		panic(err)
-	}
+	_, v1, _ := nip19.Decode(npub)
+	_, v2, _ := nip19.Decode("npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r") // 🌊 primal
 
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
+	filters = []nostr.Filter{{
+		Kinds:   []int{nostr.KindEncryptedDirectMessage},
+		Authors: []string{v1.(string), v2.(string)},
+	}}
+
+	// ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	// defer cancel()
 
 	sub, err := relay.Subscribe(ctx, filters)
 	if err != nil {

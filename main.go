@@ -2,22 +2,31 @@ package main
 
 import (
 	"hub/subscriber"
+	"log"
+	"os"
 
-	"github.com/nbd-wtf/go-nostr"
-	"github.com/nbd-wtf/go-nostr/nip19"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	sk := nostr.GeneratePrivateKey()
-	// pk, _ := nostr.GetPublicKey(sk)
+	// // workers
 
-	nsec, _ := nip19.EncodePrivateKey(sk)
-	// npub, _ := nip19.EncodePublicKey(pk)
+	// workers.Create_Worker()
 
-	npub := "npub15770rt0a8knm22mka87zw26hjezvfmn4hvl2rkn7zq7pfm2md4mqjxfkc9"
+	// return
+
+	// subscriber
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	nsec := os.Getenv("HUB_NSEC")
+	npub := os.Getenv("HUB_NPUB")
 
 	subscriber.Subscribe(nsec, npub)
 
+	// // publisher
 	// npub_Receiver := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // 🌊 primal
 	// // npub_Receiver = ""  // 🛹 skatepark
 

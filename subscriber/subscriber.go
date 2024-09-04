@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/nbd-wtf/go-nostr"
+	"github.com/nbd-wtf/go-nostr/nip04"
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
@@ -43,11 +44,19 @@ func Subscribe(nsec string, npub string) {
 		panic(err)
 	}
 
+	_, sk, _ := nip19.Decode(nsec)
+
 	for ev := range sub.Events {
 		// channel will stay open until the ctx is cancelled (in this case, context timeout)
-		fmt.Println(ev.Content)
-		fmt.Println(ev.PubKey)
-		fmt.Println(ev.Tags)
+		shared, _ := nip04.ComputeSharedSecret(ev.PubKey, sk.(string))
+
+		npub, _ := nip19.EncodePublicKey(ev.PubKey)
+		fmt.Println(npub)
+
+		ciphertext := ev.Content
+		plaintext, _ := nip04.Decrypt(ciphertext, shared)
+		fmt.Println(plaintext)
+
 		fmt.Println()
 	}
 

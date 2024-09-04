@@ -4,6 +4,8 @@ go 1.23.0
 
 require github.com/nbd-wtf/go-nostr v0.34.10
 
+require github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect

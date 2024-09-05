@@ -42,12 +42,14 @@ func main() {
 		npub := os.Getenv("HUB_NPUB")
 
 		subscriber.Subscribe(nsec, npub)
+
 	case opts["spawn"].(bool):
 		workers.Create_Worker()
+
 	case opts["publish"].(bool):
 		// publisher
 		npub_Receiver := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // 🌊 primal
-		// npub_Receiver = ""  // 🛹 skatepark
+		npub_Receiver = "npub1amffkjlqudax8egy8e587ajdh4xekj0y0vktj2te4mx8cnnekfxs8yx299"  // 🛹 skatepark
 
 		// publisher.Publish()
 		publisher.Publish_Encrypted(npub_Receiver)

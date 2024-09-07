@@ -3,6 +3,7 @@ package subscriber
 import (
 	"context"
 	"fmt"
+	"hub/nostr/publisher"
 
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip04"
@@ -23,8 +24,6 @@ func Subscribe(nsec string, npub string) {
 	fmt.Println("Listening for nostr events...")
 
 	_, v1, _ := nip19.Decode(npub)
-	// _, v2, _ := nip19.Decode("npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r") // 🌊 primal
-	// _, v3, _ := nip19.Decode("npub1vzjyahj8zach3ydfv2fmqk3adgwvctpcnr69vc98uza9cw955tas3ntdzv") // 🛹 skatechat
 
 	tags := make(map[string][]string)
 	tags["p"] = []string{v1.(string)}
@@ -47,7 +46,6 @@ func Subscribe(nsec string, npub string) {
 	_, sk, _ := nip19.Decode(nsec)
 
 	for ev := range sub.Events {
-		// channel will stay open until the ctx is cancelled (in this case, context timeout)
 		shared, _ := nip04.ComputeSharedSecret(ev.PubKey, sk.(string))
 
 		npub, _ := nip19.EncodePublicKey(ev.PubKey)
@@ -55,9 +53,14 @@ func Subscribe(nsec string, npub string) {
 
 		ciphertext := ev.Content
 		plaintext, _ := nip04.Decrypt(ciphertext, shared)
+
 		fmt.Println(plaintext)
 
 		fmt.Println()
+
+		if plaintext == "🙂" {
+			publisher.Publish_Encrypted(npub, "🙃")
+		}
 	}
 
 	fmt.Println("done")

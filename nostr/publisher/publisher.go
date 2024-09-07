@@ -3,6 +3,7 @@ package publisher
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip04"
@@ -39,23 +40,43 @@ func Publish() {
 	}
 }
 
-func Publish_Encrypted(npub_Receiver string) {
-	sk := nostr.GeneratePrivateKey()
-	pk, _ := nostr.GetPublicKey(sk)
+func Publish_Encrypted(npub_Receiver string, message string) {
+	fmt.Println("Publishing encrypted message to", npub_Receiver)
 
-	nsec, _ := nip19.EncodePrivateKey(sk)
-	npub, _ := nip19.EncodePublicKey(pk)
+	var sk string
+	nsec := os.Getenv("HUB_NSEC")
+	npub := os.Getenv("HUB_NPUB")
 
-	fmt.Println(nsec)
-	fmt.Println(npub)
-	fmt.Println()
+	if nsec == "" || npub == "" {
+		fmt.Println("Generating new keys since HUB_NSEC or HUB_NPUB is not set:")
+
+		sk = nostr.GeneratePrivateKey()
+
+		pk, _ := nostr.GetPublicKey(sk)
+
+		nsec, _ = nip19.EncodePrivateKey(sk)
+		npub, _ = nip19.EncodePublicKey(pk)
+
+		fmt.Println("Generated nsec:", nsec)
+		fmt.Println("Generated npub:", npub)
+		fmt.Println()
+	} else {
+		fmt.Println("Using existing keys from environment:")
+		fmt.Println("npub:", npub)
+		fmt.Println()
+	}
 
 	if _, v, err := nip19.Decode(npub_Receiver); err == nil {
 		receiverKey := v.(string)
 
-		shared, _ := nip04.ComputeSharedSecret(receiverKey, sk)
+		_, sk, err := nip19.Decode(nsec)
+		if err != nil {
+			fmt.Println("Error decoding private key:", err)
+			return
+		}
 
-		message := "🔋"
+		shared, _ := nip04.ComputeSharedSecret(receiverKey, sk.(string))
+
 		encryptedMessage, _ := nip04.Encrypt(message, shared)
 
 		var tags nostr.Tags
@@ -67,7 +88,7 @@ func Publish_Encrypted(npub_Receiver string) {
 			Tags:      tags,
 			Content:   encryptedMessage,
 		}
-		ev.Sign(sk)
+		ev.Sign(sk.(string))
 
 		ctx := context.Background()
 		for _, url := range []string{"wss://relay.primal.net"} {

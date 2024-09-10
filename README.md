@@ -2,6 +2,12 @@
 
 This hub is used to monitor and dispatch SKATEPAY related [nostr][nostr] and [solana][solana] events. 
 
+## Manual
+### Start hub
+```
+go run main.go up
+```
+
 [nostr]: https://github.com/fiatjaf/nostr
 [solana]: https://docs.solanalabs.com/cli/install
 

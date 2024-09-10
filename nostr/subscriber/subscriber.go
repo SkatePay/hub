@@ -11,8 +11,7 @@ import (
 )
 
 func Subscribe(nsec string, npub string) {
-	fmt.Println(nsec)
-	fmt.Println(npub)
+	fmt.Println("🇺🇸", npub, "online")
 	fmt.Println()
 
 	ctx := context.Background()
@@ -49,15 +48,12 @@ func Subscribe(nsec string, npub string) {
 		shared, _ := nip04.ComputeSharedSecret(ev.PubKey, sk.(string))
 
 		npub, _ := nip19.EncodePublicKey(ev.PubKey)
-		fmt.Println(npub)
+		fmt.Println()
 
 		ciphertext := ev.Content
 		plaintext, _ := nip04.Decrypt(ciphertext, shared)
 
-		fmt.Println(plaintext)
-
-		fmt.Println()
-
+		fmt.Println(npub, ":", plaintext)
 		if plaintext == "🙂" {
 			publisher.Publish_Encrypted(npub, "🙃")
 		}

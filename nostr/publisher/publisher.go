@@ -41,8 +41,6 @@ func Publish() {
 }
 
 func Publish_Encrypted(npub_Receiver string, message string) {
-	fmt.Println("Publishing encrypted message to", npub_Receiver)
-
 	var sk string
 	nsec := os.Getenv("HUB_NSEC")
 	npub := os.Getenv("HUB_NPUB")
@@ -59,10 +57,6 @@ func Publish_Encrypted(npub_Receiver string, message string) {
 
 		fmt.Println("Generated nsec:", nsec)
 		fmt.Println("Generated npub:", npub)
-		fmt.Println()
-	} else {
-		fmt.Println("Using existing keys from environment:")
-		fmt.Println("npub:", npub)
 		fmt.Println()
 	}
 
@@ -102,7 +96,7 @@ func Publish_Encrypted(npub_Receiver string, message string) {
 				continue
 			}
 
-			fmt.Printf("published to %s\n", url)
+			fmt.Println("✉️ ➡️", url, npub_Receiver)
 		}
 	} else {
 		panic(err)

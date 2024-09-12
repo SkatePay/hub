@@ -3,9 +3,14 @@
 This hub is used to monitor and dispatch SKATEPAY related [nostr][nostr] and [solana][solana] events. 
 
 ## Manual
-### Start hub
+### Start hub or run utility command
 ```
 go run main.go up
+go run main.go quick_identity
+go run main.go public_chat
+go run main.go broadcast
+go run main.go ping
+go run main.go quick_wallet
 ```
 
 [nostr]: https://github.com/fiatjaf/nostr

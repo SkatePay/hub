@@ -8,7 +8,7 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func Publish() {
+func Quick_Wallet() {
 	// Create a new account:
 	account := solana.NewWallet()
 	fmt.Println("account private key:", account.PrivateKey)

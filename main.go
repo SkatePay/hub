@@ -17,9 +17,11 @@ const USAGE = `hub
 
 Usage:
   hub up
-  hub nostr_spawn
-  hub nostr_publish
-  hub solana_publish
+  hub quick_identity
+  hub public_chat
+  hub broadcast
+  hub ping
+  hub quick_wallet
 
 Specify <content> as '-' to make the publish or message command read it
 from stdin.
@@ -46,17 +48,25 @@ func main() {
 
 		subscriber.Subscribe(nsec, npub)
 
-	case opts["nostr_spawn"].(bool):
-		workers.Create_Worker()
+	// Nostr Utilities
+	case opts["quick_identity"].(bool):
+		workers.Quick_Identity()
 
-	case opts["nostr_publish"].(bool):
+	case opts["public_chat"].(bool):
+		workers.Create_Channel()
+
+	case opts["broadcast"].(bool):
+		workers.Find_Channel()
+
+	case opts["ping"].(bool):
 		// publisher
 		npub_Receiver := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // 🌊 primal
 
 		// publisher.Publish()
 		publisher.Publish_Encrypted(npub_Receiver, "🙃")
 
-	case opts["solana_publish"].(bool):
-		s_p.Publish()
+	// Solana Utilities
+	case opts["quick_wallet"].(bool):
+		s_p.Quick_Wallet()
 	}
 }

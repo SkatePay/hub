@@ -7,7 +7,7 @@ import (
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
-func Create_Worker() {
+func Quick_Identity() {
 	sk := nostr.GeneratePrivateKey()
 	pk, _ := nostr.GetPublicKey(sk)
 

@@ -44,6 +44,7 @@ func Publish_Encrypted(npub_Receiver string, message string) {
 	var sk string
 	nsec := os.Getenv("HUB_NSEC")
 	npub := os.Getenv("HUB_NPUB")
+	nrelay := os.Getenv("HUB_RELAY")
 
 	if nsec == "" || npub == "" {
 		fmt.Println("Generating new keys since HUB_NSEC or HUB_NPUB is not set:")
@@ -85,7 +86,7 @@ func Publish_Encrypted(npub_Receiver string, message string) {
 		ev.Sign(sk.(string))
 
 		ctx := context.Background()
-		for _, url := range []string{"wss://relay.primal.net"} {
+		for _, url := range []string{nrelay} {
 			relay, err := nostr.RelayConnect(ctx, url)
 			if err != nil {
 				fmt.Println(err)

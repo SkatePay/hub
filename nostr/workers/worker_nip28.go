@@ -11,7 +11,7 @@ import (
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
-func Create_Channel() {
+func Broadcast() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -37,7 +37,7 @@ func Create_Channel() {
 	var tags nostr.Tags
 
 	createChannel := func() {
-		content = "{\"name\": \"Demo Channel 3\", \"about\": \"A test channel.\", \"picture\": \"https://placekitten.com/200/200\", \"relays\": [\"wss://relay.primal.net\"]}"
+		content = "{\"name\": \"Demo Channel\", \"about\": \"A test channel.\", \"picture\": \"https://placekitten.com/200/200\", \"relays\": [\"wss://relay.primal.net\"]}"
 
 		ev = nostr.Event{
 			PubKey:    pk.(string),
@@ -125,7 +125,7 @@ func Create_Channel() {
 	fmt.Printf("published to %s\n", relay)
 }
 
-func Find_Channel() {
+func Scan() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -143,6 +143,7 @@ func Find_Channel() {
 	var filters nostr.Filters
 	if _, v, err := nip19.Decode(npub); err == nil {
 		pub := v.(string)
+		pub = "b41bd8a39b6d5889c4759f0f35716b350cc170bf6d1d2d4c23937ddb6929af65"
 		filters = []nostr.Filter{{
 			Kinds:   []int{nostr.KindChannelCreation, nostr.KindChannelMetadata, nostr.KindChannelMessage},
 			Authors: []string{pub},

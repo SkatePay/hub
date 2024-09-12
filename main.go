@@ -18,8 +18,8 @@ const USAGE = `hub
 Usage:
   hub up
   hub quick_identity
-  hub public_chat
   hub broadcast
+  hub scan
   hub ping
   hub quick_wallet
 
@@ -52,11 +52,11 @@ func main() {
 	case opts["quick_identity"].(bool):
 		workers.Quick_Identity()
 
-	case opts["public_chat"].(bool):
-		workers.Create_Channel()
-
 	case opts["broadcast"].(bool):
-		workers.Find_Channel()
+		workers.Broadcast()
+
+	case opts["scan"].(bool):
+		workers.Scan()
 
 	case opts["ping"].(bool):
 		// publisher

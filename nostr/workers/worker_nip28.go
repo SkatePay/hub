@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand/v2"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -95,10 +96,11 @@ func Broadcast() {
 		// 	// other fields...
 		// }
 
-		content = "🟩"
+		content = fmt.Sprintf("🎲 %v", rand.IntN(6)+1)
 
-		tags = nil
-		tags = append(tags, nostr.Tag{"e", "dde50a64b7aab5cc36c9e2944b452ecbec910dc52ba1a9078028dc227564f01f", nrelay, "root"})
+		eventId := os.Getenv("HUB_CHANNEL_ID")
+
+		tags = append(tags, nostr.Tag{"e", eventId, nrelay, "root"})
 
 		ev = nostr.Event{
 			PubKey:    pk.(string),
@@ -113,6 +115,8 @@ func Broadcast() {
 		if err := relay.Publish(ctx, ev); err != nil {
 			fmt.Println(err)
 		}
+
+		fmt.Printf("✉️ ➡️ %s\n", relay)
 	}
 
 	if false {
@@ -121,8 +125,6 @@ func Broadcast() {
 	}
 
 	createMessage()
-
-	fmt.Printf("published to %s\n", relay)
 }
 
 func Scan() {

@@ -3,8 +3,8 @@ package workers
 import (
 	"context"
 	"fmt"
+	"hub/nostr/weather"
 	"log"
-	"math/rand/v2"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -96,7 +96,18 @@ func Broadcast() {
 		// 	// other fields...
 		// }
 
-		content = fmt.Sprintf("🎲 %v", rand.IntN(6)+1)
+		countryCode := "US"
+		zipCode := "90291"
+
+		values := weather.GetWeather(countryCode, zipCode)
+
+		if len(values) == 0 {
+			fmt.Println("No weather data found")
+			return
+		}
+		chunks := []interface{}{"Current Weather:", values[0], "°F"}
+
+		content := fmt.Sprintf("%v %v %v ☀️", chunks...)
 
 		eventId := os.Getenv("HUB_CHANNEL_ID")
 
@@ -145,10 +156,13 @@ func Scan() {
 	var filters nostr.Filters
 	if _, v, err := nip19.Decode(npub); err == nil {
 		pub := v.(string)
+		fmt.Printf("pub: %s\n", pub)
 		pub = "b41bd8a39b6d5889c4759f0f35716b350cc170bf6d1d2d4c23937ddb6929af65"
+		id := "22e4dd5d387b8cf8f96fa159af04edf845d6526149e0e93b8a0f6b23c97af4a2"
 		filters = []nostr.Filter{{
-			Kinds:   []int{nostr.KindChannelCreation, nostr.KindChannelMetadata, nostr.KindChannelMessage},
-			Authors: []string{pub},
+			IDs:   []string{id},
+			Kinds: []int{nostr.KindChannelCreation, nostr.KindChannelMetadata},
+			// Authors: []string{pub},
 		}}
 	} else {
 		panic(err)

@@ -7,6 +7,7 @@ require github.com/nbd-wtf/go-nostr v0.34.10
 require (
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/gagliardetto/solana-go v1.11.0
+	github.com/twpayne/go-meteomatics v1.0.0
 )
 
 require (

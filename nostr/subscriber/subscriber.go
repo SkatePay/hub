@@ -4,11 +4,18 @@ import (
 	"context"
 	"fmt"
 	"hub/nostr/publisher"
+	"strings"
 
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip04"
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
+
+func getUsername(input string) string {
+	input = strings.TrimSuffix(input, ".")
+	length := len(input)
+	return input[length-10:]
+}
 
 func Subscribe(nsec string, npub string) {
 	fmt.Println("🇺🇸", npub, "online")
@@ -56,6 +63,11 @@ func Subscribe(nsec string, npub string) {
 		fmt.Println(npub, ":", plaintext)
 		if plaintext == "🙂" {
 			publisher.Publish_Encrypted(npub, "🙃")
+		}
+
+		if strings.Contains(plaintext, "Hi, I would like to report ") {
+			message := fmt.Sprintf("Could you elaborate on the problem you're encountering with %s? Additional details would greatly assist in resolving your issue. In the meanwhile, feel free to mute the user if that's necessary.", getUsername(plaintext))
+			publisher.Publish_Encrypted(npub, message)
 		}
 	}
 

@@ -6,6 +6,7 @@ This hub is used to monitor and dispatch SKATEPAY related [nostr][nostr] and [so
 ### Start hub or run utility command
 ```
 go run main.go up
+go run main.go public_chat
 go run main.go quick_identity
 go run main.go broadcast
 go run main.go scan

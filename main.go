@@ -17,6 +17,7 @@ const USAGE = `hub
 
 Usage:
   hub up
+  hub public_chat
   hub quick_identity
   hub broadcast
   hub scan
@@ -36,17 +37,21 @@ func main() {
 		return
 	}
 
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	nsec := os.Getenv("HUB_NSEC")
+	npub := os.Getenv("HUB_NPUB")
+
 	switch {
 	case opts["up"].(bool):
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatal("Error loading .env file")
-		}
-
-		nsec := os.Getenv("HUB_NSEC")
-		npub := os.Getenv("HUB_NPUB")
-
 		subscriber.Subscribe(nsec, npub)
+
+	// Public Chat
+	case opts["public_chat"].(bool):
+		subscriber.PublicChat(nsec, npub)
 
 	// Nostr Utilities
 	case opts["quick_identity"].(bool):

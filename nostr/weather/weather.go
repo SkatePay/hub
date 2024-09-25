@@ -45,3 +45,20 @@ func GetWeather(countryCode string, zipCode string) []float64 {
 	}
 	return values
 }
+
+func GetReport() string {
+	countryCode := "US"
+	zipCode := "90291"
+
+	values := GetWeather(countryCode, zipCode)
+
+	if len(values) == 0 {
+		fmt.Println("No weather data found")
+		return ""
+	}
+	chunks := []interface{}{"Current Temperature", zipCode, values[0], "°F"}
+
+	report := fmt.Sprintf("%v in %v is %v %v ☀️", chunks...)
+
+	return report
+}

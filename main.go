@@ -51,7 +51,8 @@ func main() {
 
 	// Public Chat
 	case opts["public_chat"].(bool):
-		subscriber.PublicChat(nsec, npub)
+		channelId := os.Getenv("HUB_CHANNEL_ID")
+		subscriber.PublicChat(channelId, nsec, npub)
 
 	// Nostr Utilities
 	case opts["quick_identity"].(bool):

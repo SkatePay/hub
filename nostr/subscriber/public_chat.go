@@ -1,6 +1,10 @@
 package subscriber
 
 import (
+	"encoding/json"
+	"hub/nostr/weather"
+	"strings"
+
 	"context"
 	"fmt"
 	"os"
@@ -9,9 +13,88 @@ import (
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
 
-func PublicChat(nsec string, npub string) {
+type Message struct {
+	Content string `json:"content"`
+	Kind    string `json:"kind"`
+}
+
+type DefaultProvider struct {
+	Relay      *nostr.Relay
+	ChannelId  string
+	PublicKey  string
+	PrivateKey string
+}
+
+func (p *DefaultProvider) GetRelay() *nostr.Relay {
+	return p.Relay
+}
+
+func (p *DefaultProvider) GetChannelId() string {
+	return p.ChannelId
+}
+
+func (p *DefaultProvider) GetPrivateKey() string {
+	return p.PrivateKey
+}
+
+func (p *DefaultProvider) GetPublicKey() string {
+	return p.PublicKey
+}
+
+type RelayProvider interface {
+	GetRelay() *nostr.Relay
+	GetChannelId() string
+	GetPrivateKey() string
+	GetPublicKey() string
+}
+
+func ProcessEvent(provider RelayProvider, ctx context.Context, event nostr.Event) {
+	relay := provider.GetRelay()
+	channelId := provider.GetChannelId()
+	pk := provider.GetPublicKey()
+	sk := provider.GetPrivateKey()
+
+	npub, _ := nip19.EncodePublicKey(event.PubKey)
+	suffix := npub[len(npub)-3:]
+	username := fmt.Sprintf("skate-%s", suffix)
+
+	var message Message
+	err := json.Unmarshal([]byte(event.Content), &message)
+	if err != nil {
+		fmt.Println(username, event.Content)
+	} else {
+		fmt.Println(username, message.Content)
+
+		if strings.Contains(message.Content, "!weather") {
+			content := weather.GetReport()
+
+			var ev nostr.Event
+			var tags nostr.Tags
+
+			tags = append(tags, nostr.Tag{"e", channelId, relay.URL, "root"})
+
+			ev = nostr.Event{
+				PubKey:    pk,
+				CreatedAt: nostr.Now(),
+				Kind:      nostr.KindChannelMessage,
+				Content:   content,
+				Tags:      tags,
+			}
+
+			ev.Sign(sk)
+
+			if err := relay.Publish(ctx, ev); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+}
+
+func PublicChat(channelId string, nsec string, npub string) {
 	url := os.Getenv("HUB_RELAY")
-	eventId := os.Getenv("HUB_CHANNEL_ID")
+
+	_, pk, _ := nip19.Decode(npub)
+	_, sk, _ := nip19.Decode(nsec)
 
 	ctx := context.Background()
 	relay, err := nostr.RelayConnect(ctx, url)
@@ -19,12 +102,12 @@ func PublicChat(nsec string, npub string) {
 		panic(err)
 	}
 
-	fmt.Println("📡", eventId, " connected")
+	fmt.Println("📡", channelId, " connected")
 	fmt.Println("🇺🇸", npub, "online")
 	fmt.Println()
 
 	tags := make(map[string][]string)
-	tags["e"] = []string{eventId}
+	tags["e"] = []string{channelId}
 
 	filters := []nostr.Filter{{
 		Kinds: []int{nostr.KindChannelMessage},
@@ -53,10 +136,14 @@ func PublicChat(nsec string, npub string) {
 				events = append(events, event)
 			} else {
 				// Process new events as they come in
-				npub, _ := nip19.EncodePublicKey(event.PubKey)
-				suffix := npub[len(npub)-3:]
-				username := fmt.Sprintf("skate-%s", suffix)
-				fmt.Println(username, event.Content)
+				provider := &DefaultProvider{
+					Relay:      relay,
+					ChannelId:  channelId,
+					PrivateKey: sk.(string),
+					PublicKey:  pk.(string),
+				}
+
+				ProcessEvent(provider, ctx, *event)
 			}
 
 		case <-sub.EndOfStoredEvents:
@@ -66,10 +153,18 @@ func PublicChat(nsec string, npub string) {
 				// Process stored events in reverse order
 				for i := len(events) - 1; i >= 0; i-- {
 					event := events[i]
+
 					npub, _ := nip19.EncodePublicKey(event.PubKey)
 					suffix := npub[len(npub)-3:]
 					username := fmt.Sprintf("skate-%s", suffix)
-					fmt.Println(username, event.Content)
+
+					var message Message
+					err := json.Unmarshal([]byte(event.Content), &message)
+					if err != nil {
+						fmt.Println(username, event.Content)
+					} else {
+						fmt.Println(username, message.Content)
+					}
 				}
 				events = nil // Reset the buffer for new events
 			}

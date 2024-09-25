@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"hub/api"
 	"hub/nostr/publisher"
 	"hub/nostr/subscriber"
 	"hub/nostr/workers"
@@ -18,6 +19,7 @@ const USAGE = `hub
 Usage:
   hub up
   hub public_chat
+  hub api
   hub quick_identity
   hub broadcast
   hub scan
@@ -46,13 +48,18 @@ func main() {
 	npub := os.Getenv("HUB_NPUB")
 
 	switch {
+	// Start Tech Support
 	case opts["up"].(bool):
 		subscriber.Subscribe(nsec, npub)
 
-	// Public Chat
+	// Monitor Public Chat
 	case opts["public_chat"].(bool):
 		channelId := os.Getenv("HUB_CHANNEL_ID")
 		subscriber.PublicChat(channelId, nsec, npub)
+
+	// Start API
+	case opts["api"].(bool):
+		api.Start()
 
 	// Nostr Utilities
 	case opts["quick_identity"].(bool):

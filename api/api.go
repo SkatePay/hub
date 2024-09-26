@@ -13,13 +13,17 @@ type Status struct {
 	Status string `json:"status"`
 }
 
+type Coordinate struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}
+
 type Lead struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	Icon      string    `json:"icon"`
-	Latitude  float64   `json:"latitude"`
-	Longitude float64   `json:"longitude"`
-	ChannelId string    `json:"channelId"`
+	ID         uuid.UUID  `json:"id"`
+	Name       string     `json:"name"`
+	Icon       string     `json:"icon"`
+	Coordinate Coordinate `json:"coordinate"`
+	ChannelId  string     `json:"channelId"`
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +35,8 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 
 func leadsHandles(w http.ResponseWriter, r *http.Request) {
 	leads := []Lead{
-		{ID: uuid.New(), Name: "Kickflip Contest", Icon: "🏆", Latitude: 33.987210164306546, Longitude: -118.47545038626512, ChannelId: "6e1fd586debdd7b0b8a13b56dc6c4087ffbf4299f0c2a5845df39f231e5aa276"},
+		{ID: uuid.New(), Name: "Kickflip Contest", Icon: "🏆", Coordinate: Coordinate{Latitude: 33.987210164306546, Longitude: -118.47545038626512},
+			ChannelId: "6e1fd586debdd7b0b8a13b56dc6c4087ffbf4299f0c2a5845df39f231e5aa276"},
 		// Add more Lead entries as needed
 	}
 

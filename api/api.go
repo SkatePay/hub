@@ -35,7 +35,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 
 func leadsHandles(w http.ResponseWriter, r *http.Request) {
 	leads := []Lead{
-		{ID: uuid.New(), Name: "Kickflip Contest", Icon: "🏆", Coordinate: Coordinate{Latitude: 33.987210164306546, Longitude: -118.47545038626512},
+		{ID: uuid.New(), Name: "Kickflips", Icon: "🏆", Coordinate: Coordinate{Latitude: 33.987210164306546, Longitude: -118.47545038626512},
 			ChannelId: "6e1fd586debdd7b0b8a13b56dc6c4087ffbf4299f0c2a5845df39f231e5aa276"},
 		// Add more Lead entries as needed
 	}

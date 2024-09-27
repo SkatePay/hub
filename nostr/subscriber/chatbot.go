@@ -90,7 +90,7 @@ func ProcessEvent(provider RelayProvider, ctx context.Context, event nostr.Event
 	}
 }
 
-func PublicChat(channelId string, nsec string, npub string) {
+func ChatBot(channelId string, nsec string, npub string) {
 	url := os.Getenv("HUB_RELAY")
 
 	_, pk, _ := nip19.Decode(npub)

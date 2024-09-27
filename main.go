@@ -18,7 +18,7 @@ const USAGE = `hub
 
 Usage:
   hub up
-  hub public_chat
+  hub chatbot
   hub api
   hub quick_identity
   hub broadcast
@@ -53,9 +53,9 @@ func main() {
 		subscriber.Subscribe(nsec, npub)
 
 	// Monitor Public Chat
-	case opts["public_chat"].(bool):
+	case opts["chatbot"].(bool):
 		channelId := os.Getenv("HUB_CHANNEL_ID")
-		subscriber.PublicChat(channelId, nsec, npub)
+		subscriber.ChatBot(channelId, nsec, npub)
 
 	// Start API
 	case opts["api"].(bool):

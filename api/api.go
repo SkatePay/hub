@@ -50,6 +50,7 @@ func leadsHandles(w http.ResponseWriter, r *http.Request) {
 func Start() {
 	http.HandleFunc("/status", statusHandler)
 	http.HandleFunc("/leads", leadsHandles)
+	http.HandleFunc("/keys", handleKeysRequest)
 
 	// curl -X GET "https://localhost:3001/token?bucket=skateconnect" -H "Content-Type: application/json"
 	http.HandleFunc("/token", handleTokenRequest)

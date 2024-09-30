@@ -46,15 +46,15 @@ func main() {
 
 	nsec := os.Getenv("HUB_NSEC")
 	npub := os.Getenv("HUB_NPUB")
+	channelId := os.Getenv("HUB_CHANNEL_ID")
 
 	switch {
 	// Start Tech Support
 	case opts["up"].(bool):
-		subscriber.Subscribe(nsec, npub)
+		subscriber.Subscribe(nsec, npub, channelId)
 
 	// Monitor Public Chat
 	case opts["chatbot"].(bool):
-		channelId := os.Getenv("HUB_CHANNEL_ID")
 		subscriber.ChatBot(channelId, nsec, npub)
 
 	// Start API

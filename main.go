@@ -4,7 +4,7 @@ import (
 	"flag"
 	"hub/api"
 	"hub/nostr/publisher"
-	"hub/nostr/subscriber"
+	hub "hub/nostr/subscriber"
 	"hub/nostr/workers"
 	s_p "hub/solana/publisher"
 	"log"
@@ -51,11 +51,11 @@ func main() {
 	switch {
 	// Start Tech Support
 	case opts["up"].(bool):
-		subscriber.Subscribe(nsec, npub, channelId)
+		hub.Subscribe(nsec, npub, channelId)
 
 	// Monitor Public Chat
 	case opts["chatbot"].(bool):
-		subscriber.ChatBot(channelId, nsec, npub)
+		hub.ChatBot(channelId, nsec, npub)
 
 	// Start API
 	case opts["api"].(bool):

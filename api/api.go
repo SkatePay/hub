@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/google/uuid"
 )
@@ -48,6 +49,8 @@ func leadsHandles(w http.ResponseWriter, r *http.Request) {
 }
 
 func Start() {
+	// curl -X GET "https://localhost:3001/status" -H "Content-Type: application/json"
+
 	http.HandleFunc("/status", statusHandler)
 	http.HandleFunc("/leads", leadsHandles)
 	http.HandleFunc("/keys", handleKeysRequest)
@@ -55,8 +58,14 @@ func Start() {
 	// curl -X GET "https://localhost:3001/token?bucket=skateconnect" -H "Content-Type: application/json"
 	http.HandleFunc("/token", handleTokenRequest)
 
-	fmt.Printf("Starting server on port 3001\n")
-	if err := http.ListenAndServe(":3001", nil); err != nil {
+	// Get the port from environment variable, default to 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Printf("Starting server on port %s\n", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
 }

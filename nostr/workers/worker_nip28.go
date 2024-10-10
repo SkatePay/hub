@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"hub/nostr/weather"
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -15,7 +14,7 @@ import (
 func Broadcast() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		// log.Fatal("Error loading .env file")
 	}
 
 	nsec := os.Getenv("HUB_NSEC")
@@ -141,7 +140,7 @@ func Broadcast() {
 func Scan() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		// log.Fatal("Error loading .env file")
 	}
 
 	npub := os.Getenv("HUB_NPUB")

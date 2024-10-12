@@ -55,6 +55,9 @@ func Start() {
 	http.HandleFunc("/leads", leadsHandles)
 	http.HandleFunc("/keys", handleKeysRequest)
 
+	// curl "http://localhost:3001/channel/ab3561547df90fc8840022577ef039f61383daae9adb1960d1485968a5ca39fa" -H "Content-Type: application/json"
+	http.HandleFunc("/channel/", handleChannelVideos)
+
 	// curl -X GET "https://localhost:3001/token?bucket=skateconnect" -H "Content-Type: application/json"
 	http.HandleFunc("/token", handleTokenRequest)
 

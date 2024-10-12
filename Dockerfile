@@ -25,8 +25,14 @@ WORKDIR /app
 # Copy the Go binary from the build stage
 COPY --from=builder /app/hub-service .
 
+# Copy the entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+
+# Make the script executable
+RUN chmod +x /app/entrypoint.sh
+
 # Expose the port your service listens on (if applicable)
 EXPOSE 8080
 
-# Run the service
-CMD ["./hub-service", "api"]
+# Run the entrypoint script to start all services
+CMD ["/app/entrypoint.sh"]

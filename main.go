@@ -17,9 +17,9 @@ import (
 const USAGE = `hub
 
 Usage:
-  hub up
-  hub chatbot
   hub api
+  hub support
+  hub chatbot
   hub quick_identity
   hub broadcast
   hub scan
@@ -49,13 +49,13 @@ func main() {
 	channelId := os.Getenv("HUB_CHANNEL_ID")
 
 	switch {
-	// Start Tech Support
-	case opts["up"].(bool):
-		hub.Subscribe(nsec, npub, channelId)
+	// Start Support
+	case opts["support"].(bool):
+		hub.TechSupport(nsec, npub, channelId)
 
 	// Monitor Public Chat
 	case opts["chatbot"].(bool):
-		hub.ChatBot(channelId, nsec, npub)
+		hub.ChatBot(nsec, npub, channelId)
 
 	// Start API
 	case opts["api"].(bool):

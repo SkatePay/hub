@@ -49,6 +49,10 @@ func main() {
 	channelId := os.Getenv("HUB_CHANNEL_ID")
 
 	switch {
+	// Start API
+	case opts["api"].(bool):
+		api.Start()
+
 	// Start Support
 	case opts["support"].(bool):
 		hub.TechSupport(nsec, npub, channelId)
@@ -56,10 +60,6 @@ func main() {
 	// Monitor Public Chat
 	case opts["chatbot"].(bool):
 		hub.ChatBot(nsec, npub, channelId)
-
-	// Start API
-	case opts["api"].(bool):
-		api.Start()
 
 	// Nostr Utilities
 	case opts["quick_identity"].(bool):

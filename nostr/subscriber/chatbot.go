@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"hub/nostr/weather"
 	"strings"
+	"time"
 
 	"context"
 	"fmt"
@@ -90,6 +91,12 @@ func ProcessEvent(provider RelayProvider, ctx context.Context, event nostr.Event
 	}
 }
 
+// Max number of retries to reconnect
+const maxRetries = 5
+
+// ReconnectDelay is the delay between reconnection attempts
+const reconnectDelay = 5 * time.Second
+
 func ChatBot(nsec string, npub string, channelId string) {
 	url := os.Getenv("HUB_RELAY")
 
@@ -97,32 +104,56 @@ func ChatBot(nsec string, npub string, channelId string) {
 	_, sk, _ := nip19.Decode(nsec)
 
 	ctx := context.Background()
-	relay, err := nostr.RelayConnect(ctx, url)
-	if err != nil {
-		panic(err)
+
+	// Function to establish the connection and subscribe to the relay
+	connectAndSubscribe := func() (*nostr.Subscription, *nostr.Relay, error) {
+		relay, err := nostr.RelayConnect(ctx, url)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to connect to relay: %v", err)
+		}
+
+		fmt.Println("📡", channelId, " connected")
+		fmt.Println("🇺🇸", npub, "online")
+		fmt.Println()
+
+		tags := make(map[string][]string)
+		tags["e"] = []string{channelId}
+
+		filters := []nostr.Filter{{
+			Kinds: []int{nostr.KindChannelMessage},
+			Tags:  tags,
+			Limit: 64,
+		}}
+
+		sub, err := relay.Subscribe(ctx, filters)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to subscribe to relay: %v", err)
+		}
+
+		return sub, relay, nil
 	}
 
-	fmt.Println("📡", channelId, " connected")
-	fmt.Println("🇺🇸", npub, "online")
-	fmt.Println()
+	// Reconnection logic with retries
+	for retryCount := 0; retryCount < maxRetries; retryCount++ {
+		sub, relay, err := connectAndSubscribe()
+		if err != nil {
+			fmt.Printf("Error connecting to relay: %v. Retrying in %v... (Attempt %d/%d)\n", err, reconnectDelay, retryCount+1, maxRetries)
+			time.Sleep(reconnectDelay)
+			continue
+		}
 
-	tags := make(map[string][]string)
-	tags["e"] = []string{channelId}
+		// Once connected, process events
+		processEvents(ctx, sub, relay, pk.(string), sk.(string), channelId)
 
-	filters := []nostr.Filter{{
-		Kinds: []int{nostr.KindChannelMessage},
-		Tags:  tags,
-		Limit: 64,
-	}}
-
-	// ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
-	// defer cancel()
-
-	sub, err := relay.Subscribe(ctx, filters)
-	if err != nil {
-		panic(err)
+		// If processing completes without errors, break the retry loop
+		break
 	}
 
+	fmt.Println("Max retries reached. Could not reconnect to the relay.")
+}
+
+// Function to process events and handle relay disconnections
+func processEvents(ctx context.Context, sub *nostr.Subscription, relay *nostr.Relay, pk, sk, channelId string) {
 	var events []*nostr.Event
 	var processingStoredEvents bool
 
@@ -130,7 +161,8 @@ func ChatBot(nsec string, npub string, channelId string) {
 		select {
 		case event, ok := <-sub.Events:
 			if !ok {
-				return
+				fmt.Println("Relay disconnected, trying to reconnect...")
+				return // Exit to trigger reconnection logic
 			}
 			if !processingStoredEvents {
 				events = append(events, event)
@@ -139,8 +171,8 @@ func ChatBot(nsec string, npub string, channelId string) {
 				provider := &DefaultProvider{
 					Relay:      relay,
 					ChannelId:  channelId,
-					PrivateKey: sk.(string),
-					PublicKey:  pk.(string),
+					PrivateKey: sk,
+					PublicKey:  pk,
 				}
 
 				ProcessEvent(provider, ctx, *event)
@@ -170,13 +202,12 @@ func ChatBot(nsec string, npub string, channelId string) {
 			}
 
 		case <-relay.Context().Done():
-			fmt.Println("done")
-			return
+			fmt.Println("Relay context done, closing connection...")
+			return // Exit to trigger reconnection logic
 		}
 	}
 }
 
-// ContentStructure represents the structure of the content
 type ContentStructure struct {
 	Content string `json:"content"`
 	Kind    string `json:"kind"`

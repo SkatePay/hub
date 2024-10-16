@@ -58,7 +58,7 @@ func ChatBot(nsec string, npub string, channelId string) {
 		return sub, relay, nil
 	}
 
-	// Reconnection logic with retries
+	// Reconnection logic with retries and reset on success
 	for retryCount := 0; retryCount < maxRetries; retryCount++ {
 		sub, relay, err := connectAndSubscribe()
 		if err != nil {
@@ -75,8 +75,9 @@ func ChatBot(nsec string, npub string, channelId string) {
 			continue
 		}
 
-		// If processing completes without errors, break the retry loop
-		break
+		// If the connection and event processing are successful, reset retryCount
+		fmt.Println("Connection established and processed events successfully, resetting retry count.")
+		retryCount = 0
 	}
 
 	fmt.Println("Max retries reached. Could not reconnect to the relay.")

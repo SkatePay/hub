@@ -100,6 +100,9 @@ func TechSupport(nsecForHost string, npubForHost string, channelId string) {
 			time.Sleep(5 * time.Second)
 		} else {
 			// Successful connection, break out of retry loop
+			// If the connection and event processing are successful, reset retryCount
+			fmt.Println("Connection established and processed events successfully, resetting retry count.")
+			retryCount = 0
 			break
 		}
 

@@ -3,10 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -100,37 +98,37 @@ func getS3VideosByChannel(channelId string) ([]string, error) {
 	return videos, nil
 }
 
-func handleChannelVideos(w http.ResponseWriter, r *http.Request) {
-	// Extract channelId from the URL path (e.g., /channel/{channelId})
-	path := r.URL.Path
-	parts := strings.Split(path, "/")
-	if len(parts) < 3 {
-		http.Error(w, "Invalid URL path", http.StatusBadRequest)
-		return
-	}
-	channelId := parts[2]
+// func handleChannelVideos(w http.ResponseWriter, r *http.Request) {
+// 	// Extract channelId from the URL path (e.g., /channel/{channelId})
+// 	path := r.URL.Path
+// 	parts := strings.Split(path, "/")
+// 	if len(parts) < 3 {
+// 		http.Error(w, "Invalid URL path", http.StatusBadRequest)
+// 		return
+// 	}
+// 	channelId := parts[2]
 
-	// Get videos from S3 by channelId
-	videos, err := getS3VideosByChannel(channelId)
-	if err != nil {
-		log.Printf("Failed to retrieve videos for channelId=%s: %v", channelId, err)
-		http.Error(w, "Failed to retrieve videos", http.StatusInternalServerError)
-		return
-	}
+// 	// Get videos from S3 by channelId
+// 	videos, err := getS3VideosByChannel(channelId)
+// 	if err != nil {
+// 		log.Printf("Failed to retrieve videos for channelId=%s: %v", channelId, err)
+// 		http.Error(w, "Failed to retrieve videos", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	// Set the Content-Type header to application/json
-	w.Header().Set("Content-Type", "application/json")
+// 	// Set the Content-Type header to application/json
+// 	w.Header().Set("Content-Type", "application/json")
 
-	// Create the response structure
-	response := map[string][]string{
-		"videos": videos,
-	}
+// 	// Create the response structure
+// 	response := map[string][]string{
+// 		"videos": videos,
+// 	}
 
-	// Encode the response as JSON and send it
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
-		log.Printf("Failed to encode JSON response: %v", err)
-		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
-		return
-	}
-}
+// 	// Encode the response as JSON and send it
+// 	err = json.NewEncoder(w).Encode(response)
+// 	if err != nil {
+// 		log.Printf("Failed to encode JSON response: %v", err)
+// 		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+// 		return
+// 	}
+// }

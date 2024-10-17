@@ -48,6 +48,50 @@ func leadsHandles(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(leads)
 }
 
+// CORS Middleware to handle CORS requests
+func enableCORS(w http.ResponseWriter, _ *http.Request) {
+	// Check the environment (COPILOT_ENVIRONMENT_NAME)
+	env := os.Getenv("COPILOT_ENVIRONMENT_NAME")
+	var allowedOrigin string
+
+	// Set allowed origin based on the environment
+	if env == "production" {
+		// In production, allow only requests from the production domain
+		allowedOrigin = "https://skatepark.chat"
+	} else {
+		// In non-production (e.g., dev or local), allow localhost for front-end dev
+		allowedOrigin = "http://localhost:3000"
+	}
+
+	// Set CORS headers dynamically based on the environment
+	w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+
+	// Allow specific HTTP methods (GET, POST, OPTIONS)
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+
+	// Allow headers that are sent in the request
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	// Allow credentials (e.g., cookies, authorization headers)
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
+// Middleware function to apply CORS headers
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		enableCORS(w, r)
+
+		// Handle preflight requests (OPTIONS method)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler if it's not a preflight request
+		next.ServeHTTP(w, r)
+	})
+}
+
 func Start() {
 	// curl -X GET "https://localhost:3001/status" -H "Content-Type: application/json"
 
@@ -68,7 +112,7 @@ func Start() {
 	}
 
 	fmt.Printf("Starting server on port %s\n", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, withCORS(http.DefaultServeMux)); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -26,3 +26,4 @@ go run main.go quick_wallet
 - [go-nostr](https://github.com/nbd-wtf/go-nostr) - [MIT License, Copyright (c) 2022 nbd](https://github.com/nbd-wtf/go-nostr/blob/master/LICENSE.md)
 - [solana-go](https://github.com/gagliardetto/solana-go) - [Apache License 2.0](https://github.com/gagliardetto/solana-go/blob/main/LICENSE)
 - [octane](https://github.com/anza-xyz/octane) - [Apache License 2.0](https://github.com/anza-xyz/octane/blob/master/LICENSE)
+- [nostream](https://github.com/cameri/nostream) - [The MIT License (MIT)](https://github.com/cameri/nostream/blob/main/LICENSE)

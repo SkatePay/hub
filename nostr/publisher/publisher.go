@@ -24,8 +24,10 @@ func Publish() {
 
 	ev.Sign(sk)
 
+	url := os.Getenv("HUB_RELAY")
+
 	ctx := context.Background()
-	for _, url := range []string{"wss://relay.primal.net"} {
+	for _, url := range []string{url} {
 		relay, err := nostr.RelayConnect(ctx, url)
 		if err != nil {
 			fmt.Println(err)

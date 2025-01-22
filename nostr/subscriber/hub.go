@@ -31,10 +31,12 @@ func TechSupport(nsecForHost string, npubForHost string, channelId string) {
 	nostr.InfoLogger = log.New(os.Stderr, "[go-nostr][info] ", log.LstdFlags)
 	nostr.DebugLogger = log.New(os.Stderr, "[go-nostr][debug] ", log.LstdFlags)
 
+	url := os.Getenv("HUB_RELAY")
+
 	// Function to establish the connection and listen for events
 	connectAndListen := func() error {
 		// Connect to the relay
-		relay, err := nostr.RelayConnect(ctx, "wss://relay.primal.net")
+		relay, err := nostr.RelayConnect(ctx, url)
 		if err != nil {
 			log.Printf("Failed to connect to relay: %v", err)
 			return fmt.Errorf("failed to connect to relay: %v", err)

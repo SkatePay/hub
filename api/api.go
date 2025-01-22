@@ -36,12 +36,8 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 
 func leadsHandles(w http.ResponseWriter, r *http.Request) {
 	leads := []Lead{
-		{ID: uuid.New(), Name: "Public Chat", Icon: "📡", Coordinate: Coordinate{Latitude: 33.98685829544777, Longitude: -118.47541361363558},
-			ChannelId: "ab3561547df90fc8840022577ef039f61383daae9adb1960d1485968a5ca39fa"},
-		{ID: uuid.New(), Name: "Kickflips", Icon: "🏆", Coordinate: Coordinate{Latitude: 33.98722350529692, Longitude: -118.47543510467679},
-			ChannelId: "006e90a428579dfe5cd894ad990ac9d7039f7c50a2d9c5184199cdfba4e5b635"},
-		{ID: uuid.New(), Name: "Cleaning Crew", Icon: "🧹", Coordinate: Coordinate{Latitude: 33.98703813963489, Longitude: -118.47560084057935},
-			ChannelId: "bad52e45b13ebc9603baaf56b5b9adb5599a634a4a32037ec13427dcd88e7657"},
+		{ID: uuid.New(), Name: "Public Chat", Icon: "📡", Coordinate: Coordinate{Latitude: 33.98686098062241, Longitude: -118.4754199190118},
+			ChannelId: "92ef3ac79a8772ddf16a2e74e239a67bc95caebdb5bd59191c95cf91685dfc8e"},
 	}
 
 	w.Header().Set("Content-Type", "application/json")

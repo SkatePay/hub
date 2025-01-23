@@ -18,7 +18,10 @@ import (
 func getUsername(input string) string {
 	input = strings.TrimSuffix(input, ".")
 	length := len(input)
-	return input[length-10:]
+	if length > 10 {
+		return input[length-10:]
+	}
+	return input
 }
 
 func TechSupport(nsecForHost string, npubForHost string, channelId string) {
@@ -32,83 +35,76 @@ func TechSupport(nsecForHost string, npubForHost string, channelId string) {
 	nostr.DebugLogger = log.New(os.Stderr, "[go-nostr][debug] ", log.LstdFlags)
 
 	url := os.Getenv("HUB_RELAY")
+	maxRetries := 5
+
+	// Channel to signal when connectAndListen exits
+	retrySignal := make(chan error)
 
 	// Function to establish the connection and listen for events
-	connectAndListen := func() error {
+	connectAndListen := func(ctx context.Context) {
+		defer func() {
+			retrySignal <- fmt.Errorf("connectAndListen terminated unexpectedly")
+		}()
+
 		// Connect to the relay
 		relay, err := nostr.RelayConnect(ctx, url)
 		if err != nil {
 			log.Printf("Failed to connect to relay: %v", err)
-			return fmt.Errorf("failed to connect to relay: %v", err)
+			retrySignal <- fmt.Errorf("failed to connect to relay: %v", err)
+			return
 		}
 		defer relay.Close()
 
 		fmt.Println("Listening for nostr events...")
 
 		_, v1, _ := nip19.Decode(npubForHost)
-
-		tags := make(map[string][]string)
-		tags["p"] = []string{v1.(string)}
-
+		tags := map[string][]string{"p": {v1.(string)}}
 		filters := []nostr.Filter{{
 			Kinds: []int{nostr.KindEncryptedDirectMessage},
 			Tags:  tags,
 			Limit: 1,
 		}}
 
-		// Subscribe to the relay
 		sub, err := relay.Subscribe(ctx, filters)
 		if err != nil {
 			log.Printf("Failed to subscribe to relay: %v", err)
-			return fmt.Errorf("failed to subscribe to relay: %v", err)
+			retrySignal <- fmt.Errorf("failed to subscribe to relay: %v", err)
+			return
 		}
 
-		_, sk, _ := nip19.Decode(nsecForHost)
-
-		// Event processing loop
 		for {
 			select {
 			case event := <-sub.Events:
-				// Process the events
-				shared, _ := nip04.ComputeSharedSecret(event.PubKey, sk.(string))
-				npub, _ := nip19.EncodePublicKey(event.PubKey)
-
-				ciphertext := event.Content
-				plaintext, _ := nip04.Decrypt(ciphertext, shared)
-
-				var message Message
-				err := json.Unmarshal([]byte(plaintext), &message)
-				if err != nil {
-					log.Printf("Failed to unmarshal message: %v", err)
-					fmt.Println(npub, ":", plaintext)
-				} else {
-					// Handle specific message content
-					handleMessageContent(message, npub, nsecForHost, npubForHost, channelId)
-				}
-
+				// Process incoming events
+				handleEvent(event, nsecForHost, npubForHost, channelId)
+			case <-ctx.Done():
+				log.Println("Context canceled, exiting connectAndListen...")
+				return
 			case <-relay.Context().Done():
-				// Relay context is done, this means the connection was lost
 				log.Println("Relay context done, closing connection...")
-				return fmt.Errorf("relay connection lost")
+				return
 			}
 		}
 	}
 
-	// Reconnection logic with retries and proper logging
-	for retryCount := 0; retryCount < maxRetries; retryCount++ {
-		err := connectAndListen()
+	// Retry loop
+	retryCount := 0
+	for retryCount < maxRetries {
+		log.Printf("Attempting to start connectAndListen... (Retry %d/%d)", retryCount+1, maxRetries)
+		go connectAndListen(ctx)
+
+		// Wait for connectAndListen to exit
+		err := <-retrySignal
 		if err != nil {
 			log.Printf("Error: %v. Retrying in 5 seconds... (Attempt %d/%d)", err, retryCount+1, maxRetries)
 			time.Sleep(5 * time.Second)
+			retryCount++
 		} else {
-			// Successful connection, break out of retry loop
-			// If the connection and event processing are successful, reset retryCount
-			fmt.Println("Connection established and processed events successfully, resetting retry count.")
-			retryCount = 0
+			log.Println("Connection successfully established and running.")
 			break
 		}
 
-		if retryCount == maxRetries-1 {
+		if retryCount == maxRetries {
 			log.Println("Max retries reached. Could not reconnect to the relay.")
 		}
 	}
@@ -116,14 +112,36 @@ func TechSupport(nsecForHost string, npubForHost string, channelId string) {
 	fmt.Println("done")
 }
 
-// Helper function to handle the specific message content logic
+// Handle individual events
+func handleEvent(event *nostr.Event, nsecForHost, npubForHost, channelId string) {
+	_, sk, _ := nip19.Decode(nsecForHost)
+	shared, _ := nip04.ComputeSharedSecret(event.PubKey, sk.(string))
+	npub, _ := nip19.EncodePublicKey(event.PubKey)
+
+	ciphertext := event.Content
+	plaintext, _ := nip04.Decrypt(ciphertext, shared)
+
+	var message Message
+	err := json.Unmarshal([]byte(plaintext), &message)
+	if err != nil {
+		log.Printf("Failed to unmarshal message: %v", err)
+		fmt.Println(npub, ":", plaintext)
+	} else {
+		handleMessageContent(message, npub, nsecForHost, npubForHost, channelId)
+	}
+}
+
+// Helper function to handle specific message content logic
 func handleMessageContent(message Message, npub, nsecForHost, npubForHost, channelId string) {
 	if message.Content == "🙂" {
 		publisher.Publish_Encrypted(npub, "🙃")
 	}
 
 	if strings.Contains(message.Content, "Hi, I would like to report ") {
-		reply := fmt.Sprintf("Could you elaborate on the problem you're encountering with %s? Additional details would greatly assist in resolving your issue. In the meanwhile, feel free to mute the user if that's necessary.", getUsername(message.Content))
+		reply := fmt.Sprintf(
+			"Could you elaborate on the problem you're encountering with %s? Additional details would greatly assist in resolving your issue. In the meanwhile, feel free to mute the user if that's necessary.",
+			getUsername(message.Content),
+		)
 		publisher.Publish_Encrypted(npub, reply)
 	}
 

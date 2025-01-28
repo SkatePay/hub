@@ -127,7 +127,7 @@ func handleChannelVideos(w http.ResponseWriter, r *http.Request) {
 	// Define the tags for video events
 	tags := make(map[string][]string)
 	tags["e"] = []string{channelId}
-	tags["t"] = []string{"video"}
+	// tags["t"] = []string{"video"}
 
 	// Fetch video events using the generic FetchEvents function
 	videoEvents, err := FetchEvents(nsec, npub, channelId, tags)

@@ -3,3 +3,4 @@ copilot/
 go.mod
 go.sum
 project-structure.txt
+.DS_Store

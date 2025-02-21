@@ -1,0 +1,11 @@
+copilot
+.env
+.gitignore
+DEVOPS.md
+Dockerfile
+entrypoint.sh
+go.mod
+go.sum
+LICENSE.md
+project-structure.txt
+README.md

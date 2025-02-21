@@ -15,6 +15,12 @@ go run main.go ping
 go run main.go quick_wallet
 ```
 
+### Refactor assist
+```
+brew install tree
+tree --prune -I "$(paste -sd'|' .treeignore)" > project-structure.txt
+```
+
 [nostr]: https://github.com/fiatjaf/nostr
 [solana]: https://docs.solanalabs.com/cli/install
 

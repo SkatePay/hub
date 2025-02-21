@@ -1,10 +1,11 @@
-package subscriber
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"hub/nostr/publisher"
+	"hub/utils"
+
 	"log"
 	"os"
 	"strings"
@@ -14,15 +15,6 @@ import (
 	"github.com/nbd-wtf/go-nostr/nip04"
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
-
-func getUsername(input string) string {
-	input = strings.TrimSuffix(input, ".")
-	length := len(input)
-	if length > 10 {
-		return input[length-10:]
-	}
-	return input
-}
 
 func TechSupport(nsecForHost string, npubForHost string, channelId string) {
 	fmt.Println(npubForHost, "online")
@@ -134,20 +126,20 @@ func handleEvent(event *nostr.Event, nsecForHost, npubForHost, channelId string)
 // Helper function to handle specific message content logic
 func handleMessageContent(message Message, npub, nsecForHost, npubForHost, channelId string) {
 	if message.Content == "🙂" {
-		publisher.Publish_Encrypted(npub, "🙃")
+		utils.PublishEncrypted(npub, "🙃")
 	}
 
 	if strings.Contains(message.Content, "Hi, I would like to report ") {
 		reply := fmt.Sprintf(
 			"Could you elaborate on the problem you're encountering with %s? Additional details would greatly assist in resolving your issue. In the meanwhile, feel free to mute the user if that's necessary.",
-			getUsername(message.Content),
+			utils.ExtractUsername(message.Content),
 		)
-		publisher.Publish_Encrypted(npub, reply)
+		utils.PublishEncrypted(npub, reply)
 	}
 
 	if message.Content == "I'm online." {
 		welcomeMessage := "Welcome to SkateConnect, skater! If you have any questions or need to report a bug do not hesitate to get in touch with us."
-		publisher.Publish_Encrypted(npub, welcomeMessage)
+		utils.PublishEncrypted(npub, welcomeMessage)
 		Announce(channelId, npub, nsecForHost, npubForHost)
 	}
 }

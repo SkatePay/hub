@@ -2,11 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"hub/api"
-	"hub/nostr/publisher"
-	hub "hub/nostr/subscriber"
+	groupbot "hub/bots/group-bot"
+	"hub/core"
 	"hub/nostr/workers"
-	s_p "hub/solana/publisher"
+	"hub/solana"
+	"hub/utils"
 	"log"
 	"os"
 
@@ -18,8 +20,8 @@ const USAGE = `hub
 
 Usage:
   hub api
-  hub support
-  hub chatbot
+  hub dm-bot
+  hub group-bot
   hub quick_identity
   hub broadcast
   hub scan
@@ -31,37 +33,27 @@ from stdin.
 `
 
 func main() {
-	log.SetPrefix("<> ")
+	initializeLogging()
+	loadEnvVariables()
 
 	opts, err := docopt.ParseArgs(USAGE, flag.Args(), "")
-
 	if err != nil {
-		return
+		log.Fatalf("❌ Failed to parse CLI arguments: %v", err)
 	}
 
-	err = godotenv.Load()
-	if err != nil {
-		// log.Fatal("Error loading .env file")
-	}
+	nsec, npub, channelID := getEnvVariables()
 
-	nsec := os.Getenv("HUB_NSEC")
-	npub := os.Getenv("HUB_NPUB")
-	channelId := os.Getenv("HUB_CHANNEL_ID")
-
+	// Command Execution
 	switch {
-	// Start API
 	case opts["api"].(bool):
-		api.Start()
+		startAPI()
 
-	// Start Support
-	case opts["support"].(bool):
-		hub.TechSupport(nsec, npub, channelId)
+	case opts["dm-bot"].(bool):
+		startDMBot(nsec, npub, channelID)
 
-	// Monitor Public Chat
-	case opts["chatbot"].(bool):
-		hub.ChatBot(nsec, npub, channelId)
+	case opts["group-bot"].(bool):
+		startGroupBot(nsec, npub, channelID)
 
-	// Nostr Utilities
 	case opts["quick_identity"].(bool):
 		workers.Quick_Identity()
 
@@ -72,14 +64,60 @@ func main() {
 		workers.Scan()
 
 	case opts["ping"].(bool):
-		// publisher
-		npub_Receiver := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // 🌊 primal
+		pingExample()
 
-		// publisher.Publish()
-		publisher.Publish_Encrypted(npub_Receiver, "🙃")
-
-	// Solana Utilities
 	case opts["quick_wallet"].(bool):
-		s_p.Quick_Wallet()
+		solana.Quick_Wallet()
+
+	default:
+		fmt.Println("❗ Invalid command. Use '--help' for usage instructions.")
 	}
+}
+
+// ✅ Utility Functions
+
+func initializeLogging() {
+	log.SetPrefix("[hub] ")
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
+
+func loadEnvVariables() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("⚠️ Could not load .env file. Using system environment variables...")
+	}
+}
+
+func getEnvVariables() (string, string, string) {
+	nsec := os.Getenv("HUB_NSEC")
+	npub := os.Getenv("HUB_NPUB")
+	channelID := os.Getenv("HUB_CHANNEL_ID")
+
+	if nsec == "" || npub == "" || channelID == "" {
+		log.Fatal("❌ Missing required environment variables: HUB_NSEC, HUB_NPUB, or HUB_CHANNEL_ID")
+	}
+
+	return nsec, npub, channelID
+}
+
+// ✅ Command Execution Functions
+
+func startAPI() {
+	log.Println("🚀 Starting API service...")
+	api.Start()
+}
+
+func startDMBot(nsec, npub, channelID string) {
+	log.Println("🤖 Starting Direct Message Bot...")
+	core.TechSupport(nsec, npub, channelID)
+}
+
+func startGroupBot(nsec, npub, channelID string) {
+	log.Println("🤖 Starting Group Chat Bot...")
+	groupbot.GroupBot(nsec, npub, channelID)
+}
+
+func pingExample() {
+	npubReceiver := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // 🌊 primal
+	log.Println("📡 Sending encrypted ping message...")
+	utils.PublishEncrypted(npubReceiver, "🙃")
 }

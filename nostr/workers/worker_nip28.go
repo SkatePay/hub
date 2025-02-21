@@ -3,7 +3,8 @@ package workers
 import (
 	"context"
 	"fmt"
-	"hub/nostr/weather"
+	"hub/services/weather"
+
 	"os"
 
 	"github.com/joho/godotenv"

@@ -1,9 +1,10 @@
-package publisher
+package utils
 
 import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip04"
@@ -42,7 +43,7 @@ func Publish() {
 	}
 }
 
-func Publish_Encrypted(npub_Receiver string, message string) {
+func PublishEncrypted(npub_Receiver string, message string) {
 	var sk string
 	nsec := os.Getenv("HUB_NSEC")
 	npub := os.Getenv("HUB_NPUB")
@@ -104,4 +105,13 @@ func Publish_Encrypted(npub_Receiver string, message string) {
 	} else {
 		panic(err)
 	}
+}
+
+func ExtractUsername(input string) string {
+	input = strings.TrimSuffix(input, ".")
+	length := len(input)
+	if length > 10 {
+		return input[length-10:]
+	}
+	return input
 }

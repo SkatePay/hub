@@ -1,10 +1,10 @@
-package subscriber
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"hub/nostr/weather"
+	"hub/services/weather"
 	"log"
 	"os"
 	"strings"
@@ -12,18 +12,6 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip19"
 )
-
-type Message struct {
-	Content string `json:"content"`
-	Kind    string `json:"kind"`
-}
-
-type DefaultProvider struct {
-	Relay      *nostr.Relay
-	ChannelId  string
-	PublicKey  string
-	PrivateKey string
-}
 
 func (p *DefaultProvider) GetRelay() *nostr.Relay {
 	return p.Relay
@@ -39,18 +27,6 @@ func (p *DefaultProvider) GetPrivateKey() string {
 
 func (p *DefaultProvider) GetPublicKey() string {
 	return p.PublicKey
-}
-
-type RelayProvider interface {
-	GetRelay() *nostr.Relay
-	GetChannelId() string
-	GetPrivateKey() string
-	GetPublicKey() string
-}
-
-type ContentStructure struct {
-	Content string `json:"content"`
-	Kind    string `json:"kind"`
 }
 
 func ProcessEvent(provider RelayProvider, ctx context.Context, event nostr.Event) {
@@ -95,7 +71,7 @@ func ProcessEvent(provider RelayProvider, ctx context.Context, event nostr.Event
 	}
 }
 
-func processEvents(ctx context.Context, sub *nostr.Subscription, relay *nostr.Relay, pk, sk, channelId string) error {
+func ProcessEvents(ctx context.Context, sub *nostr.Subscription, relay *nostr.Relay, pk, sk, channelId string) error {
 	var events []*nostr.Event
 	var processingStoredEvents bool
 

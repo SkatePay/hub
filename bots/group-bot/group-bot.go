@@ -1,4 +1,4 @@
-package subscriber
+package groupbot
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip19"
+
+	core "hub/core"
 )
 
 const (
@@ -16,7 +18,7 @@ const (
 	reconnectDelay = 5 * time.Second // Delay between reconnection attempts
 )
 
-func ChatBot(nsec string, npub string, channelId string) {
+func GroupBot(nsec string, npub string, channelId string) {
 	url := os.Getenv("HUB_RELAY")
 
 	_, pk, _ := nip19.Decode(npub)
@@ -68,7 +70,7 @@ func ChatBot(nsec string, npub string, channelId string) {
 		}
 
 		// Process events while connected
-		err = processEvents(ctx, sub, relay, pk.(string), sk.(string), channelId)
+		err = core.ProcessEvents(ctx, sub, relay, pk.(string), sk.(string), channelId)
 		if err != nil {
 			log.Printf("Error: %v. Retrying in %v... (Attempt %d/%d)", err, reconnectDelay, retryCount+1, maxRetries)
 			time.Sleep(reconnectDelay)

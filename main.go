@@ -51,7 +51,7 @@ func main() {
 		startDMBot(nsec, npub, channelID, relayURL)
 
 	case opts["group-bot"].(bool):
-		startGroupBot(nsec, npub, channelID)
+		startGroupBot(nsec, npub, channelID, relayURL)
 
 	case opts["quick_identity"].(bool):
 		workers.Quick_Identity()
@@ -114,7 +114,13 @@ func startDMBot(nsec, npub, channelID string, relayURL string) {
 	bot.Start()
 }
 
-func startGroupBot(nsec, npub, channelID string) {
+func startGroupBot(nsec, npub, channelID string, relayURL string) {
 	log.Println("🤖 Starting Group Chat Bot...")
-	groupbot.GroupBot(nsec, npub, channelID)
+
+	bot, err := groupbot.NewGroupBot(nsec, npub, relayURL, channelID)
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize DMBot: %v", err)
+	}
+
+	bot.Start()
 }

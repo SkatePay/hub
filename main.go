@@ -4,11 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"hub/api"
+	dmbot "hub/bots/dm-bot"
 	groupbot "hub/bots/group-bot"
-	"hub/core"
 	"hub/nostr/workers"
 	"hub/solana"
-	"hub/utils"
 	"log"
 	"os"
 
@@ -41,7 +40,7 @@ func main() {
 		log.Fatalf("❌ Failed to parse CLI arguments: %v", err)
 	}
 
-	nsec, npub, channelID := getEnvVariables()
+	nsec, npub, channelID, relayURL := getEnvVariables()
 
 	// Command Execution
 	switch {
@@ -49,7 +48,7 @@ func main() {
 		startAPI()
 
 	case opts["dm-bot"].(bool):
-		startDMBot(nsec, npub, channelID)
+		startDMBot(nsec, npub, channelID, relayURL)
 
 	case opts["group-bot"].(bool):
 		startGroupBot(nsec, npub, channelID)
@@ -62,9 +61,6 @@ func main() {
 
 	case opts["scan"].(bool):
 		workers.Scan()
-
-	case opts["ping"].(bool):
-		pingExample()
 
 	case opts["quick_wallet"].(bool):
 		solana.Quick_Wallet()
@@ -87,16 +83,17 @@ func loadEnvVariables() {
 	}
 }
 
-func getEnvVariables() (string, string, string) {
+func getEnvVariables() (string, string, string, string) {
 	nsec := os.Getenv("HUB_NSEC")
 	npub := os.Getenv("HUB_NPUB")
+	relayURL := os.Getenv("HUB_RELAY")
 	channelID := os.Getenv("HUB_CHANNEL_ID")
 
-	if nsec == "" || npub == "" || channelID == "" {
-		log.Fatal("❌ Missing required environment variables: HUB_NSEC, HUB_NPUB, or HUB_CHANNEL_ID")
+	if nsec == "" || npub == "" || channelID == "" || relayURL == "" {
+		log.Fatal("❌ Missing required environment variables: HUB_NSEC, HUB_NPUB, HUB_CHANNEL_ID, HUB_RELAY")
 	}
 
-	return nsec, npub, channelID
+	return nsec, npub, channelID, relayURL
 }
 
 // ✅ Command Execution Functions
@@ -106,18 +103,18 @@ func startAPI() {
 	api.Start()
 }
 
-func startDMBot(nsec, npub, channelID string) {
+func startDMBot(nsec, npub, channelID string, relayURL string) {
 	log.Println("🤖 Starting Direct Message Bot...")
-	core.TechSupport(nsec, npub, channelID)
+
+	bot, err := dmbot.NewDMBot(nsec, npub, relayURL, channelID)
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize DMBot: %v", err)
+	}
+
+	bot.Start()
 }
 
 func startGroupBot(nsec, npub, channelID string) {
 	log.Println("🤖 Starting Group Chat Bot...")
 	groupbot.GroupBot(nsec, npub, channelID)
-}
-
-func pingExample() {
-	npubReceiver := "npub1uxp7mwl2mtetc4qmr0y6ck0p0y50c3zhglzzwvvdzf6dvpsjtvvq9gs05r" // 🌊 primal
-	log.Println("📡 Sending encrypted ping message...")
-	utils.PublishEncrypted(npubReceiver, "🙃")
 }

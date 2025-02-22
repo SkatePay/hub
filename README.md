@@ -6,13 +6,8 @@ This hub is used to monitor and dispatch SKATEPAY related [nostr][nostr] and [so
 ### Start hub or run utility command
 ```
 go run main.go up
-go run main.go public_chat
-go run main.go api
-go run main.go quick_identity
-go run main.go broadcast
-go run main.go scan
-go run main.go ping
-go run main.go quick_wallet
+go run main.go dm-bot
+go run main.go group-bot
 ```
 
 ### Refactor assist
@@ -25,7 +20,7 @@ tree --prune -I "$(paste -sd'|' .treeignore)" > project-structure.txt
 [solana]: https://docs.solanalabs.com/cli/install
 
 ## References
-- [skatepay](https://github.com/SkatePay/skatepay) - [MIT License, Copyright (c) 2024 SKATEPAY.CHAT](https://github.com/SkatePay/skatepay/blob/main/LICENSE)
+- [skatepay](https://github.com/SkatePay/skatepay) - [MIT License, Copyright (c) 2025 SKATEPAY.CHAT](https://github.com/SkatePay/skatepay/blob/main/LICENSE)
 - [prorobot](https://prorobot.ai)
 
 ## Acknowledgements

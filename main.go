@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"hub/api"
-	dmbot "hub/bots/dm-bot"
+	"hub/bots"
 	groupbot "hub/bots/group-bot"
+	"hub/bots/handlers"
+	"hub/bots/plugins"
 	"hub/nostr/workers"
 	"hub/solana"
 	"log"
@@ -48,7 +50,7 @@ func main() {
 		startAPI()
 
 	case opts["dm-bot"].(bool):
-		startDMBot(nsec, npub, channelID, relayURL)
+		startDMBot(relayURL, nsec, channelID)
 
 	case opts["group-bot"].(bool):
 		startGroupBot(nsec, npub, channelID, relayURL)
@@ -103,15 +105,38 @@ func startAPI() {
 	api.Start()
 }
 
-func startDMBot(nsec, npub, channelID string, relayURL string) {
+func startDMBot(relayURL string, nsec string, channelID string) {
 	log.Println("🤖 Starting Direct Message Bot...")
 
-	bot, err := dmbot.NewDMBot(nsec, npub, relayURL, channelID)
-	if err != nil {
-		log.Fatalf("❌ Failed to initialize DMBot: %v", err)
+	loggingPlugin := &plugins.LoggingPlugin{}
+
+	// Create a channel notifier plugin
+	channelNotifier := &plugins.ChannelNotifierPlugin{
+		ChannelID: channelID,
 	}
 
-	bot.Start()
+	// Create a support handler
+	supportHandler := &handlers.SupportHandler{
+		Plugins: []bots.HandlerPlugin{channelNotifier},
+	}
+
+	// Initialize the support bot with the notifier plugin
+	supportBot := bots.NewDMBot(
+		relayURL,
+		nsec,
+		supportHandler,
+		[]bots.BotPlugin{loggingPlugin},
+	)
+
+	// Initialize the BotManager to handle concurrent bots if needed
+	manager := bots.BotManager{}
+	manager.AddBot(supportBot)
+
+	// Start all bots
+	manager.StartAll()
+
+	// Block main thread to keep the bots running
+	select {}
 }
 
 func startGroupBot(nsec, npub, channelID string, relayURL string) {

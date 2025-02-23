@@ -4,10 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"hub/api"
-	"hub/bots"
 	groupbot "hub/bots/group-bot"
-	"hub/bots/handlers"
-	"hub/bots/plugins"
 	"hub/nostr/workers"
 	"hub/solana"
 	"log"
@@ -21,7 +18,6 @@ const USAGE = `hub
 
 Usage:
   hub api
-  hub dm-bot
   hub group-bot
   hub quick_identity
   hub broadcast
@@ -48,9 +44,6 @@ func main() {
 	switch {
 	case opts["api"].(bool):
 		startAPI()
-
-	case opts["dm-bot"].(bool):
-		startDMBot(relayURL, nsec, channelID)
 
 	case opts["group-bot"].(bool):
 		startGroupBot(nsec, npub, channelID, relayURL)
@@ -103,40 +96,6 @@ func getEnvVariables() (string, string, string, string) {
 func startAPI() {
 	log.Println("🚀 Starting API service...")
 	api.Start()
-}
-
-func startDMBot(relayURL string, nsec string, channelID string) {
-	log.Println("🤖 Starting Direct Message Bot...")
-
-	loggingPlugin := &plugins.LoggingPlugin{}
-
-	// Create a channel notifier plugin
-	channelNotifier := &plugins.ChannelNotifierPlugin{
-		ChannelID: channelID,
-	}
-
-	// Create a support handler
-	supportHandler := &handlers.SupportHandler{
-		Plugins: []bots.HandlerPlugin{channelNotifier},
-	}
-
-	// Initialize the support bot with the notifier plugin
-	supportBot := bots.NewDMBot(
-		relayURL,
-		nsec,
-		supportHandler,
-		[]bots.BotPlugin{loggingPlugin},
-	)
-
-	// Initialize the BotManager to handle concurrent bots if needed
-	manager := bots.BotManager{}
-	manager.AddBot(supportBot)
-
-	// Start all bots
-	manager.StartAll()
-
-	// Block main thread to keep the bots running
-	select {}
 }
 
 func startGroupBot(nsec, npub, channelID string, relayURL string) {

@@ -11,26 +11,6 @@ import (
 	"github.com/rs/cors"
 )
 
-// Status represents the API status response.
-type Status struct {
-	Status string `json:"status"`
-}
-
-// Coordinate represents a geographic coordinate.
-type Coordinate struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-}
-
-// Lead represents a lead with its details.
-type Lead struct {
-	ID         uuid.UUID  `json:"id"`
-	Name       string     `json:"name"`
-	Icon       string     `json:"icon"`
-	Coordinate Coordinate `json:"coordinate"`
-	ChannelID  string     `json:"channelId"`
-}
-
 // statusHandler handles requests to the /status endpoint.
 func statusHandler(w http.ResponseWriter, r *http.Request) {
 	status := Status{Status: "online"}
@@ -65,6 +45,9 @@ func sendJSONResponse(w http.ResponseWriter, data interface{}) {
 
 // Start initializes and starts the HTTP server.
 func Start() {
+	// Initialize WebSocket broadcasting
+	InitWebSocket()
+
 	// Create a new ServeMux
 	mux := http.NewServeMux()
 
@@ -74,6 +57,7 @@ func Start() {
 	mux.HandleFunc("/keys", handleKeysRequest)
 	mux.HandleFunc("/channel/", handleChannelVideos)
 	mux.HandleFunc("/token", handleTokenRequest)
+	mux.HandleFunc("/ws", HandleWebSocket) // WebSocket endpoint
 
 	// Configure CORS
 	c := cors.New(cors.Options{
